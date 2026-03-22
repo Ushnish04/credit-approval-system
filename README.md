@@ -9,37 +9,13 @@ A backend system for managing credit approvals built with Django, Celery, Postgr
 - **Celery** + **Redis** — background task queue for data ingestion
 - **Docker** + **Docker Compose** — containerization
 
-## Project Structure
-```
-credit_system/
-├── manage.py
-├── Dockerfile
-├── docker-compose.yml
-├── entrypoint.sh
-├── celery_entrypoint.sh
-├── requirements.txt
-├── customer_data.xlsx
-├── loan_data.xlsx
-├── credit_system/
-│   ├── settings.py
-│   ├── urls.py
-│   ├── celery.py
-│   └── wsgi.py
-└── credit_app/
-    ├── models.py
-    ├── views.py
-    ├── serializers.py
-    ├── urls.py
-    ├── tasks.py
-    └── utils.py
-```
+## Prerequisites
 
-## How to Run
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
 
-### Prerequisites
-- Docker Desktop installed and running
+That's it. No Python, no PostgreSQL, no Redis needed on your machine.
 
-### Steps
+## Quick Start
 
 **1. Clone the repository**
 ```bash
@@ -52,25 +28,21 @@ cd credit_system
 docker compose up --build
 ```
 
-This will automatically:
-- Start PostgreSQL, Redis, Django and Celery
-- Run all migrations
-- Start the API server at `http://localhost:8000`
+This automatically:
+- Starts PostgreSQL, Redis, Django and Celery
+- Runs all migrations
+- Starts the API at `http://localhost:8000`
 
-**3. Load the initial data**
+**3. Load initial data**
 
-Open a new terminal and run:
+Open a new terminal:
 ```bash
 docker compose exec web python manage.py shell -c "from credit_app.tasks import ingest_all_data; ingest_all_data.delay()"
 ```
 
-This loads all customer and loan data from the Excel files into the database via Celery in the background.
+This loads all customer and loan data from the Excel files into the database in the background. Wait a few seconds for it to complete.
 
-**4. Fix the ID sequence** (run once after data ingestion)
-```bash
-docker compose exec db psql -U postgres -d credit_db -c "SELECT setval('customers_customer_id_seq', (SELECT MAX(customer_id) FROM customers));"
-docker compose exec db psql -U postgres -d credit_db -c "SELECT setval('loans_loan_id_seq', (SELECT MAX(loan_id) FROM loans));"
-```
+**4. Start using the API at `http://localhost:8000`**
 
 ---
 
@@ -200,14 +172,14 @@ Response:
 
 ## Credit Score Logic
 
-Credit score is calculated out of 100 based on:
+Score calculated out of 100:
 
-| Component | Description | Weight |
-|-----------|-------------|--------|
-| EMIs paid on time | Ratio of on-time payments | 35 pts |
-| Number of past loans | Fewer loans = better score | 20 pts |
-| Loan activity this year | Less recent borrowing = better | 20 pts |
-| Loan volume vs limit | Lower utilization = better | 25 pts |
+| Component | Weight |
+|-----------|--------|
+| EMIs paid on time | 35 pts |
+| Number of past loans | 20 pts |
+| Loan activity this year | 20 pts |
+| Loan volume vs approved limit | 25 pts |
 
 **Approval rules:**
 
@@ -218,4 +190,4 @@ Credit score is calculated out of 100 based on:
 | 10 – 30 | Approved only if rate ≥ 16% |
 | < 10 | Rejected |
 
-Additional rule: if current EMIs exceed 50% of monthly salary, loan is rejected regardless of score.
+Extra rule: if current EMIs > 50% of monthly salary → rejected regardless of score.

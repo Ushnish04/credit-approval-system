@@ -1,0 +1,22 @@
+# Virtual environment — no need to push, reviewer creates their own
+venv/
+
+# Python cache files — auto generated, not needed
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment variables file — contains secrets
+.env
+
+# SQLite database — we use PostgreSQL anyway
+db.sqlite3
+
+# VS Code settings — personal to your machine
+.vscode/
+
+# Mac junk files
+.DS_Store
+
+# Python package info
+*.egg-info/

@@ -19,7 +19,7 @@ That's it. No Python, no PostgreSQL, no Redis needed on your machine.
 
 **1. Clone the repository**
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/Ushnish04/credit-approval-system/tree/main>
 cd credit_system
 ```
 

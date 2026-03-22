@@ -87,4 +87,11 @@ def ingest_loan_data():
 def ingest_all_data():
     result1 = ingest_customer_data()
     result2 = ingest_loan_data()
-    return f"{result1} | {result2}"
+
+    # Reset sequences after data is loaded
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT setval('customers_customer_id_seq', (SELECT MAX(customer_id) FROM customers))")
+        cursor.execute("SELECT setval('loans_loan_id_seq', (SELECT MAX(loan_id) FROM loans))")
+
+    return f"{result1} | {result2} | Sequences reset"
